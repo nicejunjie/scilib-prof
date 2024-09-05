@@ -1,2 +1,5 @@
-# scilib-prof
-profiler for scientific libraries
+# Scientific Libraries Profiler
+
+Profiling is ready for BLAS. 
+
+To do:  LAPACK, ScaLAPACK, CBLAS, LAPACKe, FFTW, MPI.
