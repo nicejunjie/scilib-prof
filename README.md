@@ -6,14 +6,14 @@ Profiling is ready for BLAS PBLAS, LAPACK, and ScaLAPACK.
 To do: CBLAS, LAPACKe, FFTW, MPI.
 
 ## Compile
-simply `make`, the following will be created:
-`libprof-dbi.so`: profiling with Dynamic Binary Instrumentation, works for both dynamically linked and statically linked libs. 
+simply `make`, the following will be created: <br /> 
+`libprof-dbi.so`: profiling with Dynamic Binary Instrumentation, works for both dynamically linked and statically linked libs. <br /> 
 `libprof-dl.so` : profiling based on runtime symbol resolution, only works for dynamically linked libs but is friendly when working with other tools, such as scilib-accel. 
 
 
 ## Usage
-`LD_PRELOAD=$PATH_TO_SCILIB_PROF/libprof-dbi.so`
-or 
+`LD_PRELOAD=$PATH_TO_SCILIB_PROF/libprof-dbi.so` <br /> 
+or  <br /> 
 `LD_PRELOAD=$PATH_TO_SCILIB_PROF/libprof-dl.so`
 
 ## Sample output
