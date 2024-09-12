@@ -251,23 +251,36 @@ void gather_and_calculate_stats() {
           fprintf(stderr," total runtime (s): %10.3f, library time (s): %10.3f, lib percentage: %4.1f%%.\n", \
                 apptime, libtime_avg, libtime_avg/apptime*100);
 
+          double imb_count, imb_time;
+          char imb_count_str[10], imb_time_str[10];
+ 
           fprintf(stderr,"\n                            Inclusive Times                                   \n");
           fprintf(stderr,"-------------------------------------------------------------------------------\n");
           fprintf(stderr, "           group     function           count [imb%]           time(s) [imb%]  \n");
           fprintf(stderr,"-------------------------------------------------------------------------------\n");
+
           for (int i = 0; i < libprof_fsize; i++) {
               if(stats_inclusive[i].max_count >0) {
-/*
-                 fprintf(stderr," %2d  %10s       %10zu,%10zu,%10zu        %8.3f,%8.3f,%8.3f \n", i, stats_inclusive[i].f0, \
-                      stats_inclusive[i].min_count, stats_inclusive[i].avg_count, stats_inclusive[i].max_count, \
-                      stats_inclusive[i].min_time, stats_inclusive[i].avg_time, stats_inclusive[i].max_time);
-*/
-                 fprintf(stderr," %2d   %10s   %10s    %12zu [%5.1f%]       %8.3f [%5.1f%] \n", i,\
-                      stats_inclusive[i].fg, stats_inclusive[i].f0, \
-                      stats_inclusive[i].avg_count, \
-                      ((double)stats_inclusive[i].max_count-(double)stats_inclusive[i].min_count)/(double)stats_inclusive[i].avg_count*100.0, \
-                      stats_inclusive[i].avg_time, \
-                      ((double)stats_inclusive[i].max_time-(double)stats_inclusive[i].min_time)/(double)stats_inclusive[i].avg_time*100.0);
+                 imb_count = ((double)stats_inclusive[i].max_count - (double)stats_inclusive[i].min_count) / (double)stats_inclusive[i].avg_count * 100.0;
+                 if (imb_count < 999.0) 
+                       snprintf(imb_count_str, sizeof(imb_count_str), "%4.1f%%", imb_count);
+                 else
+                       snprintf(imb_count_str, sizeof(imb_count_str), ">=999%%");
+
+                 imb_time = ((double)stats_inclusive[i].max_time - (double)stats_inclusive[i].min_time) / (double)stats_inclusive[i].avg_time * 100.0;
+                 if (imb_time < 999.0) 
+                       snprintf(imb_time_str, sizeof(imb_time_str), "%4.1f%%", imb_time);
+                 else 
+                       snprintf(imb_time_str, sizeof(imb_time_str), ">=999%%");
+
+                 fprintf(stderr," %2d   %10s   %10s    %12zu [%6s]       %8.3f [%6s] \n", 
+                      i+1,
+                      stats_inclusive[i].fg, stats_inclusive[i].f0, 
+                      stats_inclusive[i].avg_count, 
+                      imb_count_str, 
+                      stats_inclusive[i].avg_time, 
+                      imb_time_str 
+                      );
               }
           }
           fprintf(stderr,"-------------------------------------------------------------------------------\n");
@@ -283,18 +296,25 @@ void gather_and_calculate_stats() {
 
           for (int i = 0; i < libprof_fsize; i++) {
               if(stats_exclusive[i].max_count >0) {
-/*
-                 fprintf(stderr," %2d  %10s        %10zu,%10zu,%10zu        %8.3f,%8.3f,%8.3f \n", i, stats_exclusive[i].f0, \
-                      stats_exclusive[i].min_count, stats_exclusive[i].avg_count, stats_exclusive[i].max_count, \
-                      stats_exclusive[i].min_time, stats_exclusive[i].avg_time, stats_exclusive[i].max_time);
-*/
-                 fprintf(stderr," %2d   %10s   %10s    %12zu [%5.1f%]       %8.3f [%5.1f%] \n", i, \
-                      stats_exclusive[i].fg, stats_exclusive[i].f0, \
-                      stats_exclusive[i].avg_count, \
-                      ((double)stats_exclusive[i].max_count-(double)stats_exclusive[i].min_count)/(double)stats_exclusive[i].avg_count*100.0, \
-                      stats_exclusive[i].avg_time, \
-                      ((double)stats_exclusive[i].max_time-(double)stats_exclusive[i].min_time)/(double)stats_exclusive[i].avg_time*100.0);
+                 imb_count = ((double)stats_exclusive[i].max_count - (double)stats_exclusive[i].min_count) / (double)stats_exclusive[i].avg_count * 100.0;
+                 if (imb_count < 999.0) 
+                       snprintf(imb_count_str, sizeof(imb_count_str), "%4.1f%%", imb_count);
+                 else
+                       snprintf(imb_count_str, sizeof(imb_count_str), ">=999%%");
 
+                 imb_time = ((double)stats_exclusive[i].max_time - (double)stats_exclusive[i].min_time) / (double)stats_exclusive[i].avg_time * 100.0;
+                 if (imb_time < 999.0) 
+                       snprintf(imb_time_str, sizeof(imb_time_str), "%4.1f%%", imb_time);
+                 else 
+                       snprintf(imb_time_str, sizeof(imb_time_str), ">=999%%");
+
+                 fprintf(stderr," %2d   %10s   %10s    %12zu [%6s]       %8.3f [%6s] \n", i+1,
+                      stats_exclusive[i].fg, stats_exclusive[i].f0,
+                      stats_exclusive[i].avg_count,
+                      imb_count_str,
+                      stats_exclusive[i].avg_time,
+                      imb_time_str
+                      );
               }
           }
           fprintf(stderr,"-------------------------------------------------------------------------------\n");

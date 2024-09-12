@@ -24,19 +24,29 @@ FFLAGS = -O2 -mp -g -mcmodel=large #$(MEMMODEL)
 UTIL_SRCS = $(wildcard utils/*.c)
 COMMON_SRCS = init.c fini.c $(UTIL_SRCS)
 
-SRCS1 = main-dbi.c linear_algebra/blas-dbi.c 
+SRCS1 = main-dbi.c BLAS/blas-dbi.c PBLAS/pblas-dbi.c LAPACK/lapack-dbi.c ScaLAPACK/scalapack-dbi.c
 OBJ1 = $(patsubst %.c,%-dbi.o,$(COMMON_SRCS)) $(SRCS1:.c=.o)
 
-SRCS2 = main-dl.c linear_algebra/blas-dl.c
+SRCS2 = main-dl.c BLAS/blas-dl.c PBLAS/pblas-dl.c LAPACK/lapack-dl.c ScaLAPACK/scalapack-dl.c
 OBJ2 = $(patsubst %.c,%-dl.o,$(COMMON_SRCS))  $(SRCS2:.c=.o)
 
 
+all: gen-wrapper dbi dl 
 
-all: dbi dl 
-
-gen-blas: 
-	cd linear_algebra && [ -e blas-dbi.c ] || ./blas-gen.py dbi > blas-dbi.c 
-	cd linear_algebra && [ -e blas-dl.c ]  || ./blas-gen.py dl > blas-dl.c 
+gen-wrapper:
+	cd BLAS       && ../tools/gen-wrapper.py -dbi prototypes-blas.txt      > blas-dbi.c      
+	cd BLAS       && ../tools/gen-wrapper.py -dl  prototypes-blas.txt      > blas-dl.c       
+	cd BLAS       && ../tools/gen-wrapper.py -dl  prototypes-blas.txt      > blas-dl.c       
+	cd BLAS       && ../tools/gen-index.sh prototypes-blas.txt
+	cd PBLAS      && ../tools/gen-wrapper.py -dbi prototypes-pblas.txt     > pblas-dbi.c     
+	cd PBLAS      && ../tools/gen-wrapper.py -dl  prototypes-pblas.txt     > pblas-dl.c      
+	cd PBLAS      && ../tools/gen-index.sh prototypes-pblas.txt
+	cd LAPACK     && ../tools/gen-wrapper.py -dbi prototypes-lapack.txt    > lapack-dbi.c    
+	cd LAPACK     && ../tools/gen-wrapper.py -dl  prototypes-lapack.txt    > lapack-dl.c     
+	cd LAPACK     && ../tools/gen-index.sh prototypes-lapack.txt
+	cd ScaLAPACK  && ../tools/gen-wrapper.py -dbi prototypes-scalapack.txt > scalapack-dbi.c 
+	cd ScaLAPACK  && ../tools/gen-wrapper.py -dl  prototypes-scalapack.txt > scalapack-dl.c  
+	cd ScaLAPACK  && ../tools/gen-index.sh prototypes-scalapack.txt
 	
 dbi: $(FRIDA_DIR) $(TARGET1)
 $(TARGET1): $(OBJ1) 
@@ -91,4 +101,4 @@ clean:
 
 .PHONY: veryclean
 veryclean:
-	rm -rf $(TARGET1) $(TARGET2) $(OBJ1) $(OBJ2) $(FRIDA_DIR)
+	rm -rf $(TARGET1) $(TARGET2) $(OBJ1) $(OBJ2) $(FRIDA_DIR) BLAS/*.[ch] PBLAS/*.[ch] LAPACK/*.[ch] ScaLAPACK/*.[ch]

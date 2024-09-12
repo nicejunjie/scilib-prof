@@ -2,14 +2,14 @@
 
 import re
 import sys
+import argparse
 
 header = """
-#define func_group "BLAS"
-#include "global.h"
-#include "complex.h"
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include <init.h>
+#include "freplace.h"
+#include "global.h"
 #include "utils.h"
 
 """
@@ -47,12 +47,11 @@ def generate_wrapper(signature, ptype):
         return "Invalid function signature"
     
     return_type, func_name, args = match.groups()
-    func_name = func_name.rstrip('_')
- 
+
     if ptype == 'dl':
-          my_func_name = func_name + '_'
-    else: 
-          my_func_name = 'my_' + func_name
+          my_func_name = func_name
+    else:
+          my_func_name = 'dbi_' + func_name #.rstrip('_')
     
     # Generate argument names
     arg_names = [arg.split()[-1].strip('*') for arg in args.split(', ')]
@@ -62,8 +61,7 @@ def generate_wrapper(signature, ptype):
 {{
     {return_type} (*orig_f)() = NULL;
     """
-    wrapper += f"enum findex fi = {func_name};\n" 
-    #wrapper += func_name
+    wrapper += f"enum findex fi = {func_name.rstrip('_')}_index;\n"
     wrapper += fcontent1
 
     if return_type == "void":
@@ -75,7 +73,7 @@ def generate_wrapper(signature, ptype):
 
     if return_type != "void":
         wrapper += "    return result;\n"
-    else: 
+    else:
         wrapper += "    return;\n"
 
     wrapper += "}"
@@ -83,23 +81,26 @@ def generate_wrapper(signature, ptype):
     return wrapper
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate wrapper functions.')
+    parser.add_argument('fname', help='Input file name containing function prototypes')
+    group = parser.add_mutually_exclusive_group()
+    #group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-dl', action='store_true', help='Use dl mode')
+    group.add_argument('-dbi', action='store_true', help='Use dbi mode (default)')
+    
+    args = parser.parse_args()
 
-  ptype = 'dbi'
-  if len(sys.argv) >1: 
-     arg = sys.argv[1].lower()
-     if arg == 'dl': 
-           ptype = 'dl'
+    # Default to 'dbi' if neither -dl nor -dbi is specified
+    ptype = 'dl' if args.dl else 'dbi'
 
-  fname = "PROTOTYPES"
-  inputfile = open(fname, 'r')
-
-  print(header)
-  for line in  inputfile:
-    line = line.strip()
-    if line and not line.startswith('#'):
-       print(generate_wrapper(line, ptype))
-       print()
-
-
-
-
+    try:
+        with open(args.fname, 'r') as inputfile:
+            print(header)
+            for line in inputfile:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    print(generate_wrapper(line, ptype))
+                    print()
+    except FileNotFoundError:
+        print(f"Error: File '{args.fname}' not found.")
+        sys.exit(1)
